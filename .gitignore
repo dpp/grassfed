@@ -2,3 +2,9 @@
 .nrepl*
 *.log
 resources/js
+.idea
+grassfeed.iml
+gen_js
+*.iml
+*.db
+target

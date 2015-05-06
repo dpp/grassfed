@@ -1,20 +1,20 @@
 (ns grassfed.core
   (:require [cljsjs.fixed-data-table :as fdt]
-            [re-com.core             :refer [h-box v-box box gap line scroller border horizontal-tabs horizontal-bar-tabs
-                                             vertical-bar-tabs horizontal-pill-tabs vertical-pill-tabs label button
-                                             single-dropdown p]]
-            [re-com.tabs             :refer [tabs-args-desc]]
-            [re-com.util             :refer [item-for-id]]
-            [reagent.core :as reagent :refer [atom]]))
+            [re-com.core :refer [h-box v-box box gap line scroller border horizontal-tabs horizontal-bar-tabs
+                                 vertical-bar-tabs horizontal-pill-tabs vertical-pill-tabs label button
+                                 single-dropdown p]]
+            [re-com.tabs :refer [tabs-args-desc]]
+            [re-com.util :refer [item-for-id]]
+            [reagent.core :as reagent :refer [atom adapt-react-class render-component]]))
 
 (defonce app-state (atom {:text "H33ello, what is your name? "}))
 
 (defonce the-name (atom "dog"))
 
-(defonce meow-dog (atom [1 2 3 4]))
+(defonce chats (atom []))
 
-(def table (reagent/adapt-react-class  (.-Table js/FixedDataTable)))
-(def column (reagent/adapt-react-class  (.-Column js/FixedDataTable)))
+(def table (adapt-react-class (.-Table js/FixedDataTable)))
+(def column (adapt-react-class (.-Column js/FixedDataTable)))
 
 
 (def tabs-definition
@@ -38,8 +38,13 @@
 (defn change-tab [x]
   (reset! selected-tab-id x))
 
+(defn receive [x]
+  )
+
 (defn page []
   [:div
+   [:ul
+    (doseq (map (fn [x] [:li x]) @chats))]
    [:div (@app-state :text) " " @the-name]
    [horizontal-tabs
     :model     selected-tab-id
@@ -67,6 +72,6 @@
    ])
 
 (defn main []
-  (reagent/render-component [page] (.getElementById js/document "app")))
+  (render-component [page] (.getElementById js/document "app")))
 
 (main)

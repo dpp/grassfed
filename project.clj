@@ -23,6 +23,7 @@
                  [org.clojure/core.match "0.3.0-alpha4"]
                  [com.cognitect/transit-clj "0.8.271"]
                  [org.clojure/java.classpath "0.2.2"]
+                 [com.cognitect/transit-cljs "0.8.207"]
                  ]
 
   :repositories [["snapshots"     "https://oss.sonatype.org/content/repositories/snapshots"],

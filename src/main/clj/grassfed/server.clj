@@ -26,15 +26,7 @@
         scc (SelectChannelConnector.)]
     (.setPort scc 8080)
     (.setConnectors server (into-array Connector [scc]))
-    (let [context (WebAppContext.)
-          ;; classloader (WebAppClassLoader. (-> (Thread/currentThread) .getContextClassLoader) context)
-          ]
-      ;;(.addClassPath classloader "target/classes")
-      ;(doseq [url (->> (cp/classpath)
-      ;                 (filter #(-> % .getName .toLowerCase (.endsWith ".jar")))
-      ;                 (map #(-> % .getCanonicalPath)))]
-      ;  (.addClassPath classloader url))
-      ;(.setClassLoader context classloader)
+    (let [context (WebAppContext.)]
       (.setWar context "src/webapp")
       (.setServer context server)
       (let [context0 (ContextHandler.)]

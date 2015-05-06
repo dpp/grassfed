@@ -36,5 +36,5 @@
           :else nil)
         (run-loop))))
 
-(run-loop)
+(defonce runner (run-loop))
 

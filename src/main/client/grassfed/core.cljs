@@ -5,7 +5,14 @@
                                  single-dropdown p]]
             [re-com.tabs :refer [tabs-args-desc]]
             [re-com.util :refer [item-for-id]]
+            [cognitect.transit :as t]
             [reagent.core :as reagent :refer [atom adapt-react-class render-component]]))
+
+(enable-console-print!)
+
+(def t-reader (t/reader :json))
+
+(def t-writer (t/writer :json))
 
 (defonce app-state (atom {:text "H33ello, what is your name? "}))
 
@@ -38,13 +45,49 @@
 (defn change-tab [x]
   (reset! selected-tab-id x))
 
+(defn by-id [id] (. js/document (getElementById id)))
+
+(defn send
+  "send data to the server"
+  [data]
+  (js/sendToServer (t/write t-writer data)))
+
+(defn send-chat
+  []
+  (let [box (by-id "in")]
+    (send (.-value box))
+    (set! (.-value box) "")
+    ))
+
+(set! (.-onclick (by-id "send")) send-chat )
+
 (defn receive [x]
+  (let
+    [msg (t/read t-reader x)]
+    (cond
+      (seq? msg)
+      (reset! chats (vec msg))
+
+      (string? msg)
+      (swap! chats conj msg)
+
+      :else nil))
   )
+
+(defn add-rows []
+  (let [the-atom (:data  (item-for-id @selected-tab-id @tabs-definition))
+        base (count @the-atom)]
+    (doseq [x (range 0 40000)]
+      (swap! the-atom conj [(+ base x) "moose" "dog2"]))))
+
+(defn add-tab []
+  (let [cnt (inc  (count @tabs-definition))]
+    (swap! tabs-definition conj {:id (keyword (str ":grassfed.core:tab" cnt))
+                                 :label (str "Tab" cnt)
+                                 :data (atom [[(str "Tab" cnt) cnt cnt]])})))
 
 (defn page []
   [:div
-   [:ul
-    (doseq (map (fn [x] [:li x]) @chats))]
    [:div (@app-state :text) " " @the-name]
    [horizontal-tabs
     :model     selected-tab-id
@@ -59,16 +102,12 @@
                    (if (= @selected-tab-id (:id row))
                      "block" "none")}}
             (show-table (:data row))]) @tabs-definition))
-   [:button {:onClick (fn []
-                        (let [the-atom (:data  (item-for-id @selected-tab-id @tabs-definition))
-                              base (count @the-atom)]
-                          (doseq [x (range 0 40000)]
-                            (swap! the-atom conj [(+ base x) "moose" "dog2"]))))} "Add rows"]
-   [:button {:onClick (fn []
-                        (let [cnt (inc  (count @tabs-definition))]
-                          (swap! tabs-definition conj {:id (keyword (str ":grassfed.core:tab" cnt))
-                                                       :label (str "Tab" cnt)
-                                                       :data (atom [[(str "Tab" cnt) cnt cnt]])})))} "Add Tab"]
+   [:button {:onClick add-rows} "Add rows"]
+   [:button {:onClick add-tab} "Add Tab"]
+   [:hr]
+   [:ul
+    (doall (map (fn [x] ^{:key (str (rand))} [:li x]) @chats))]
+
    ])
 
 (defn main []

@@ -10,6 +10,8 @@
 
 (enable-console-print!)
 
+
+
 (def t-reader (t/reader :json))
 
 (def t-writer (t/writer :json))
@@ -106,7 +108,7 @@
    [:button {:onClick add-tab} "Add Tab"]
    [:hr]
    [:ul
-    (doall (map (fn [x] ^{:key (str (rand))} [:li x]) @chats))]
+    (doall (map (fn [x] ^{:key (str (rand))} [:li x]) (take-last 10 @chats)))]
 
    ])
 

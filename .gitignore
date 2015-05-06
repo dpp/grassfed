@@ -1,0 +1,4 @@
+.lein*
+.nrepl*
+*.log
+resources/js

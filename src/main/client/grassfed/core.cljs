@@ -26,7 +26,7 @@
 (def column (adapt-react-class (.-Column js/FixedDataTable)))
 
 
-(def tabs-definition
+(defonce tabs-definition
   (atom
    [{:id ::tab1  :label "Tab1"  :data (atom [["Tab1" 33 44]])}
     {:id ::tab2  :label "Tab2"  :data (atom [["Tab2" 9893 344]]) }
@@ -77,10 +77,17 @@
   )
 
 (defn add-rows []
-  (let [the-atom (:data  (item-for-id @selected-tab-id @tabs-definition))
-        base (count @the-atom)]
-    (doseq [x (range 0 40000)]
-      (swap! the-atom conj [(+ base x) "moose" "dog2"]))))
+      (let [the-atom (:data  (item-for-id @selected-tab-id @tabs-definition))
+            base (count @the-atom)]
+           (doseq [x (range 0 40000)]
+                  (swap! the-atom conj [(+ base x) "moose" "dog2"]))))
+
+(defn remove-rows []
+      (let [the-atom (:data  (item-for-id @selected-tab-id @tabs-definition))
+            base (count @the-atom)]
+           ;; (println "base / 2" (int (/ base 2)))
+           (reset! the-atom (subvec @the-atom (int (/ base 2))))
+           ))
 
 (defn add-tab []
   (let [cnt (inc  (count @tabs-definition))]
@@ -105,6 +112,7 @@
                      "block" "none")}}
             (show-table (:data row))]) @tabs-definition))
    [:button {:onClick add-rows} "Add rows"]
+   [:button {:onClick remove-rows} "Remove rows"]
    [:button {:onClick add-tab} "Add Tab"]
    [:hr]
    [:ul

@@ -23,12 +23,13 @@ This gives you Figwheel browser REPL stuff.
 Terminal 3:
 
 ```
-lein
+lein repl
 
 (require 'grassfed.server)
 
 (grassfed.server/-main) ;; start the web server
 ```
 
-Point your browser to http://localhost:8080
+Point your browser to [http://localhost:8080](http://localhost:8080)
+
 

@@ -16,8 +16,8 @@ object Actorize extends InSession {
   lazy val postMsg = findVar("grassfed.server.chat", "post-msg")
   lazy val fromServer = findVar("grassfed.server.bridge", "process")
 
-  def cljBridge(raw: String, sender: RoundTripHandlerFunc): Unit = {
-    fromServer.invoke(ClojureInterop.transitRead(raw), sender)
+  def cljBridge(performActor: LiftActor)(raw: String, sender: RoundTripHandlerFunc): Unit = {
+    fromServer.invoke(performActor, ClojureInterop.transitRead(raw), sender)
   }
 
   def render = {
@@ -30,6 +30,9 @@ object Actorize extends InSession {
 
       postMsg.invoke('add -> clientProxy) // register with the chat server
 
+      val clientCommandRunner =
+      session.serverActorForClient("grassfed.client.core.perform", dataFilter = transitWrite(_))
+
       // Create a server-side Actor that will receive messages when
       // a function on the client is called
       val serverActor = new LiftActor {
@@ -40,7 +43,7 @@ object Actorize extends InSession {
       }
 
       Script(JsRaw("var sendToServer = " + session.clientActorFor(serverActor).toJsCmd).cmd &
-      JsCrVar("CljBridge", session.buildRoundtrip(List("send" -> cljBridge _))))
+      JsCrVar("CljBridge", session.buildRoundtrip(List("send" -> cljBridge(clientCommandRunner) _))))
     }
     </tail>
 

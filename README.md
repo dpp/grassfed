@@ -25,9 +25,9 @@ Terminal 3:
 ```
 lein repl
 
-(require 'grassfed.server)
+(require 'grassfed.server.jetty-runner)
 
-(grassfed.server/-main) ;; start the web server
+(grassfed.server.jetty-runner/-main) ;; start the web server
 ```
 
 Point your browser to [http://localhost:8080](http://localhost:8080)

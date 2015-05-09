@@ -1,4 +1,4 @@
-(ns grassfed.core
+(ns grassfed.client.core
   (:require [cljsjs.fixed-data-table]
             [re-com.core :refer [h-box v-box box gap line scroller border horizontal-tabs horizontal-bar-tabs
                                  vertical-bar-tabs horizontal-pill-tabs vertical-pill-tabs label button
@@ -7,12 +7,11 @@
             [re-com.util :refer [item-for-id]]
             [cljs.core.async :as async]
             [cognitect.transit :as t]
-            [reagent.core :as reagent :refer [atom adapt-react-class render-component]])
+            [reagent.core :refer [atom adapt-react-class render-component]])
   (:require-macros [cljs.core.async.macros :as async])
   )
 
 (enable-console-print!)
-
 
 
 (def t-reader (t/reader :json))
@@ -55,6 +54,30 @@
 (def table (adapt-react-class (.-Table js/FixedDataTable)))
 (def column (adapt-react-class (.-Column js/FixedDataTable)))
 
+(defonce message-handlers (atom {}))
+
+(defn perform
+  "Perform stuff from the server"
+  [msg]
+  (let [msg (t-read msg)]
+    (when-some
+      [func (some->> msg :target (get @message-handlers))]
+      (func msg)
+
+      )))
+
+(defn register-handler
+  "Registers a handler"
+  [the-key the-func]
+  (swap! message-handlers assoc the-key the-func)
+  )
+
+(defn ponger [msg]
+  (println "Got message" (pr-str msg))
+  (reset! the-name (-> msg :text str))
+  )
+
+(register-handler :ping ponger)
 
 (defonce tabs-definition
   (atom
@@ -121,7 +144,7 @@
 
 (defn add-tab []
   (let [cnt (inc  (count @tabs-definition))]
-    (swap! tabs-definition conj {:id (keyword (str ":grassfed.core:tab" cnt))
+    (swap! tabs-definition conj {:id (keyword (str ":grassfed.client.core:tab" cnt))
                                  :label (str "Tab" cnt)
                                  :data (atom [[(str "Tab" cnt) cnt cnt]])})))
 
@@ -156,7 +179,7 @@
                                  )
                                ))} "Dogs!!"]
    [:hr]
-   [:input {:id "visiline"}]
+   [:textarea {:id "visiline"}]
    [:button
     {:onClick run-visi-line}
     "Eval"]

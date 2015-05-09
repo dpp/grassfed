@@ -12,7 +12,6 @@
 
   :dependencies [[org.clojure/clojure "1.7.0-beta2"]
                  [org.clojure/clojurescript "0.0-3255"]
-                 ;; [org.clojure/clojurescript  "0.0-3211"]
                  [reagent "0.5.0"]
                  [cljsjs/fixed-data-table "0.1.2-2" :exclusions [cljsjs/react]]
                  [re-com "0.5.3"]
@@ -28,15 +27,7 @@
                  [org.clojure/core.match "0.3.0-alpha4" :exclusions [org.clojure/tools.analyzer.jvm]]
                  [com.cognitect/transit-clj "0.8.271"]
                  [com.cognitect/transit-cljs "0.8.207"]
-                 [instaparse "1.4.0"]
-                 [org.clojure/data.codec "0.1.0"]
-                 [org.clojure/data.csv "0.1.2"]
-                 [org.clojure/tools.analyzer.jvm "0.6.5"]
-                 [http-kit "2.1.18"]
-                 [org.clojure/data.json "0.2.5"]
-                 [com.cemerick/pomegranate "0.3.0"]
-                 ;;   [visi/core "0.1.0" :exclusions [org.clojure/clojure org.clojure/core.async http-kit org.codehaus.plexus/plexus-utils org.clojure/tools.analyzer org.clojure/tools.reader]]
-
+                 [visi/core "0.2.1" :exclusions [org.clojure/clojure org.clojure/core.async http-kit org.codehaus.plexus/plexus-utils org.clojure/tools.analyzer org.clojure/tools.reader]]
                  ]
 
   :repositories [["snapshots"     "https://oss.sonatype.org/content/repositories/snapshots"],

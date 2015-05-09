@@ -13,27 +13,18 @@ import ClojureInterop._
 import net.liftweb.util.{Helpers, Schedule}
 
 object Actorize extends InSession {
-  lazy val postMsg = findVar("grassfed.core", "post-msg")
+  lazy val postMsg = findVar("grassfed.server.chat", "post-msg")
+  lazy val fromServer = findVar("grassfed.server.bridge", "process")
 
-  def doCount(cnt: Int, sender: RoundTripHandlerFunc): Unit = {
-    if (cnt < 4 || cnt > 1000) sender.failure(s"Invalid count: $cnt")
-    else {
-      def doIt(cnt: Int): Unit = {
-        if (cnt == 0) sender.done()
-        else {
-          sender.send(JString(s"Count is $cnt"))
-          Schedule(() => doIt(cnt - 1), Helpers.randomInt(1000).toLong)
-        }
-      }
-      doIt(cnt)
-    }
+  def cljBridge(raw: String, sender: RoundTripHandlerFunc): Unit = {
+    fromServer.invoke(ClojureInterop.transitRead(raw), sender)
   }
 
   def render = {
     <tail>
       {
       val clientProxy =
-        session.serverActorForClient("grassfed.core.receive",
+        session.serverActorForClient("grassfed.client.core.receive",
           shutdownFunc = Full(actor => postMsg.invoke('remove -> actor)),
           dataFilter = transitWrite(_))
 
@@ -49,7 +40,7 @@ object Actorize extends InSession {
       }
 
       Script(JsRaw("var sendToServer = " + session.clientActorFor(serverActor).toJsCmd).cmd &
-      JsCrVar("CountDown", session.buildRoundtrip(List("run" -> doCount _))))
+      JsCrVar("CljBridge", session.buildRoundtrip(List("send" -> cljBridge _))))
     }
     </tail>
 

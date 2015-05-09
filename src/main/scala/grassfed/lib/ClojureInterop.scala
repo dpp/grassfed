@@ -17,17 +17,15 @@ object ClojureInterop {
   lazy val eval: IFn = Clojure.`var`("clojure.core", "eval")
 
   lazy val cvt = {
-    require.invoke(Clojure.read("grassfed.util"))
-    require.invoke(Clojure.read("grassfed.core"))
+    require.invoke(Clojure.read("grassfed.server.util"))
 
-    Clojure.`var`("grassfed.util", "to-c")
+    Clojure.`var`("grassfed.server.util", "to-c")
   }
 
   lazy val ctos = {
-    require.invoke(Clojure.read("grassfed.util"))
-    require.invoke(Clojure.read("grassfed.core"))
+    require.invoke(Clojure.read("grassfed.server.util"))
 
-    Clojure.`var`("grassfed.util", "to-s")
+    Clojure.`var`("grassfed.server.util", "to-s")
   }
 
 

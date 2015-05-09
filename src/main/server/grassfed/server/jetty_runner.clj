@@ -1,12 +1,8 @@
-(ns grassfed.server
-  (:require [clojure.java.classpath :as cp])
+(ns grassfed.server.jetty-runner
   (:import [org.eclipse.jetty.server.handler ContextHandler]
            [org.eclipse.jetty.server.nio SelectChannelConnector]
-           [org.eclipse.jetty.server Handler Server Connector]
-           [org.eclipse.jetty.webapp WebAppContext WebAppClassLoader]
-
-           (java.net URLClassLoader URL)
-           (java.io File))
+           [org.eclipse.jetty.server Server Connector]
+           [org.eclipse.jetty.webapp WebAppContext])
   )
 
 ;; Run the Jetty server

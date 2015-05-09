@@ -1,13 +1,17 @@
-(ns grassfed.util
+(ns grassfed.server.util
   (:require [clojure.core.async :as async :refer [put!]]
-            [clojure.core.match :as match :refer [match]])
+            [clojure.core.match ::refer [match]]
+            [clojure.core.async :as async :refer [chan]]
+            [cognitect.transit :as transit])
   (:import (scala.collection Seq Iterator Map)
            (scala Product PartialFunction Symbol)
            (net.liftweb.actor LiftActor)
            (clojure.lang IFn IPersistentVector Keyword)
            (grassfed.lib MyActor)
            (clojure.core.async.impl.channels ManyToManyChannel)
-           ))
+           (net.liftweb.http RoundTripHandlerFunc)
+           (net.liftweb.json JsonAST$JString)
+           (java.io ByteArrayOutputStream ByteArrayInputStream)))
 
 (defprotocol FromScala
   "Converts all manner of Scala stuff into Clojure stuff"
@@ -181,4 +185,35 @@
         the-actor (build-actor (fn [msg] (put! my-chan msg)))]
     [the-actor my-chan])
 
+  )
+
+(defn transit-write
+  "write the value to a Transit string"
+  [v]
+  (let [bos (ByteArrayOutputStream.)
+        writer (transit/writer bos :json)]
+    (transit/write writer v)
+    (String. (.toByteArray bos) "UTF-8"))
+  )
+
+(defn transit-read
+  "read a String into a Transit value"
+  [^String the-str]
+  (let [bis (ByteArrayInputStream. (.getBytes the-str "UTF-8"))
+        reader (transit/reader bis :json)]
+    (transit/read reader)))
+
+(defn rt-handler-to-channel
+  "Take a `RoundTripHandlerFunc` and turn it into a core.async channel"
+  [^RoundTripHandlerFunc rt-handler]
+  (let [do-err (fn [x] (.failure rt-handler (pr-str x)))
+        the-chan (chan 10 (map identity) do-err)]
+    (async/go-loop []
+      (if-some [res (async/<! the-chan)]
+               (do
+                 (.send rt-handler (JsonAST$JString. (transit-write res)))
+                 (recur))
+               (.done rt-handler)))
+    the-chan
+    )
   )

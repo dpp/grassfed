@@ -1,12 +1,15 @@
 (ns grassfed.core
-  (:require [cljsjs.fixed-data-table :as fdt]
+  (:require [cljsjs.fixed-data-table]
             [re-com.core :refer [h-box v-box box gap line scroller border horizontal-tabs horizontal-bar-tabs
                                  vertical-bar-tabs horizontal-pill-tabs vertical-pill-tabs label button
                                  single-dropdown p]]
             [re-com.tabs :refer [tabs-args-desc]]
             [re-com.util :refer [item-for-id]]
+            [cljs.core.async :as async]
             [cognitect.transit :as t]
-            [reagent.core :as reagent :refer [atom adapt-react-class render-component]]))
+            [reagent.core :as reagent :refer [atom adapt-react-class render-component]])
+  (:require-macros [cljs.core.async.macros :as async])
+  )
 
 (enable-console-print!)
 
@@ -15,6 +18,33 @@
 (def t-reader (t/reader :json))
 
 (def t-writer (t/writer :json))
+
+(defn t-read
+  [msg]
+  (t/read t-reader msg))
+
+(defn t-write
+  [msg]
+  (t/write t-writer msg))
+
+(def error-marker :grassfed:error)
+
+(defn streaming-promise-to-channel
+  "Takes a Streaming Promise and returns a channel"
+  [promise]
+  (let [the-chan (async/chan)]
+    (-> promise
+        (.then (fn [msg] (->> msg t-read (async/put! the-chan))))
+        (.done (fn [] (async/close! the-chan)))
+        (.fail (fn [err-str] (async/put! the-chan {error-marker err-str}))))
+    the-chan)
+  )
+
+(defn send-to-server
+  "Send a message to the server and expect a core.async channel back"
+  [msg]
+  (->> msg t-write (.send js/CljBridge) streaming-promise-to-channel)
+  )
 
 (defonce app-state (atom {:text "H33ello, what is your name? "}))
 
@@ -95,8 +125,42 @@
                                  :label (str "Tab" cnt)
                                  :data (atom [[(str "Tab" cnt) cnt cnt]])})))
 
+(defn run-visi-line []
+  (let [input (by-id "visiline")
+        text (.-value input)
+        res (send-to-server {:target :visi :text text})]
+    ;; (set! (.-value input) "")
+    (async/go-loop
+      []
+      (when-some
+        [info (async/<! res)]
+        (println "Got message " (pr-str info))
+        (recur)
+        )
+      (println "Done!!")
+      )
+    ))
+
+
 (defn page []
   [:div
+   [:button {:onClick (fn [] (let [res (send-to-server {:target :ping})]
+                               (async/go-loop
+                                 []
+                                 (when-some
+                                   [info (async/<! res)]
+                                   (println "Got message " (pr-str info))
+                                   (recur)
+                                    )
+                                 (println "Done!!")
+                                 )
+                               ))} "Dogs!!"]
+   [:hr]
+   [:input {:id "visiline"}]
+   [:button
+    {:onClick run-visi-line}
+    "Eval"]
+   [:hr]
    [:div (@app-state :text) " " @the-name]
    [horizontal-tabs
     :model     selected-tab-id

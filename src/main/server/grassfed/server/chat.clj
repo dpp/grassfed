@@ -1,7 +1,7 @@
-(ns grassfed.core
-  (:require [grassfed.util :refer [send! to-c]]
+(ns grassfed.server.chat
+  (:require [grassfed.server.util :refer [send! to-c]]
             [clojure.core.match :refer [match]]
-            [clojure.core.async :as async :refer [chan go put! <!]]))
+            [clojure.core.async :refer [chan go put! <!]]))
 
 (defonce chat-server (chan))
 
